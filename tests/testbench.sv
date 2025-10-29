@@ -2,6 +2,7 @@ module testbench();
   logic        clk, reset, memwrite;
   logic [31:0] pc, instr;
   logic [31:0] writedata, addr, readdata;
+  logic [9:0] LEDR;
     
   // microprocessor
   riscvmulti cpu(clk, reset, addr, writedata, memwrite, readdata);
@@ -14,7 +15,7 @@ module testbench();
     begin
       $dumpfile("dump.vcd"); $dumpvars(0);
       reset <= 1; #15 reset <= 0;
-      $monitor("%3t PC=%h instr=%h aluIn1=%h aluIn2=%h addr=%h writedata=%h memwrite=%b readdata=%h writeBackData=%h", $time, cpu.PC, cpu.instr, cpu.SrcA, cpu.SrcB, addr, writedata, memwrite, readdata, cpu.writeBackData);
+      $monitor("%3t PC=%h LED=%h", $time, cpu.PC, LEDR);
       #12000 $writememh("riscv.out", ram.RAM);
       $writememh("cpu_regs.out", cpu.RegisterBank);
       $finish;
@@ -26,12 +27,21 @@ module testbench();
       clk <= 1; # 5; clk <= 0; # 5;
     end
 
-  // check results
-  always @(negedge clk)
-    if (memwrite)
-      if (writedata === 32'h6d73e55f) begin
-        #50 $display("Simulation succeeded!");
-        $writememh("riscv.out", ram.RAM);
-        $finish;
-      end
+  // memory-mapped i/o
+  wire isIO  = addr[8]; // 0x0000_0100
+  wire isRAM = !isIO;
+  localparam IO_LEDS_bit = 2; // 0x0000_0104
+  localparam IO_HEX_bit  = 3; // 0x0000_0108
+  localparam IO_KEY_bit  = 4; // 0x0000_0110 
+  localparam IO_SW_bit   = 5; // 0x0000_0120
+  reg [23:0] hex_digits; // memory-mapped I/O register for HEX
+
+  always @(posedge clk)
+    if (memwrite & isIO) begin // I/O write 
+      if (addr[IO_LEDS_bit])
+        LEDR <= writedata;
+      if (addr[IO_HEX_bit])
+        hex_digits <= writedata;
+  end
+
 endmodule
