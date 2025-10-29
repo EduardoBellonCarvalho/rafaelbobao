@@ -1,6 +1,7 @@
 module riscvmulti (
     input 	      clk,
     input 	      reset,
+    input inverter,
     output [31:0] Address, 
     output [31:0] WriteData,
     output 	      MemWrite,
@@ -133,10 +134,15 @@ module riscvmulti (
     reg [2:0] state = FETCH_INSTR;
 
     always @(posedge clk)
+	
         if (reset) begin
             PC    <= 0;
             state <= FETCH_INSTR;
         end else begin
+	    if (inverter) begin
+	    	PC <= 24;
+            	state <= FETCH_INSTR;
+		end
             if (writeBackEn) begin
                 RegisterBank[rdId_A3] <= writeBackData;
                 //$display("r%0d <= %b (%d) (%d)",rdId_A3,writeBackData,writeBackData,$signed(writeBackData));
