@@ -12,7 +12,7 @@ module top(
       counter <= counter + 1;
   assign clk = counter[21]; // 50MHz / 2^22 = 11.9 Hz
   assign reset = ~KEY[0]; // active low
-    
+
   // microprocessor
   riscvmulti cpu(clk, reset, addr, writedata, memwrite, readdata);
 
