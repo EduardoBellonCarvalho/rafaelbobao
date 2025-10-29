@@ -3,10 +3,10 @@
 
 _start:
 
-li s0, 0x00000100
-li t0, 0x00000200    #ultimo led
-li t1, 0x00000001    #primeiro led
-li t2, 0x00000001    #comeco(fofo) uWu
+addi s0,zero, 0x100
+addi t0,zero, 0x200    #ultimo led
+addi t1, zero,0x1    #primeiro led
+addi t2, zero,0x1    #comeco(fofo) uWu
 
 senhorloop:
 
